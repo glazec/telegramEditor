@@ -1,6 +1,6 @@
 import { Button, Container, Grid, Divider, Modal, Form } from 'semantic-ui-react'
 import React from "react";
-
+import { useForm } from "react-hook-form";
 import EditorJs from "react-editor-js";
 import DateTimePicker from 'react-datetime-picker';
 import { EDITOR_JS_TOOLS } from "./constants";
@@ -15,23 +15,11 @@ function App() {
   const instanceRef = React.useRef(null);
   const [open, setOpen] = React.useState(false)
   const [time, setTime] = React.useState(new Date());
-  const [chatId, setChatId] = React.useState('');
+  // const [chatId, setChatId] = React.useState('');
+  const { register, handleSubmit, getValues } = useForm();
+  const onSubmit = data => console.log(data);
   // const [botToken, setBotToken] = React.useState(null);
 
-  function handleChange(e, { arg, value }) {
-    let formKey = arg || {};
-    switch (formKey) {
-      // case "botToken":
-      //   setBotToken(value);
-      //   break;
-      case "chatId":
-        setChatId(value);
-        break;
-      default:
-        break;
-    }
-
-  }
   async function triggerIntergromat(
     schedule = "5",
     content = "_markdownItalic_",
@@ -42,11 +30,11 @@ function App() {
     console.info(content)
     console.info(recipient)
 
-    // const response = await axios.post("https://hook.integromat.com/zkhcf32uoy3pthg522f2imwiits0l5uk", {
-    //   schedule: schedule,
-    //   content: content,
-    //   recipient: recipient,
-    // });
+    const response = await axios.post("https://hook.integromat.com/zkhcf32uoy3pthg522f2imwiits0l5uk", {
+      schedule: schedule,
+      content: content,
+      recipient: recipient,
+    });
   }
 
   async function publish() {
@@ -59,11 +47,10 @@ function App() {
     // md = md.split("<").join("").split(">").join("");
 
     html = html.split("<p> ").join("");
-    console.info(html)
     html = html.split("</p>").join('\n\n');
     // BOT.sendMessage(828090678, md, { parse_mode: "Markdown" });
     let scheduleSeconds = Math.abs(time - Date.now()) / 1000
-    await triggerIntergromat(scheduleSeconds, html, chatId);
+    await triggerIntergromat(scheduleSeconds, html, getValues('chatId'));
   }
   return (
     <Container style={{ marginTop: "16px" }}>
@@ -82,14 +69,10 @@ function App() {
               <Modal.Header>Schedule your post</Modal.Header>
               <Modal.Content>
                 <Modal.Description>
-                  <Form>
-                    {/* <Form.Field>
-                      <label>Bot Token</label>
-                      <input placeholder="828090678" name="botToken" value={botToken} onChange={this.handleChange}></input>
-                    </Form.Field> */}
+                  <Form onSubmit={handleSubmit(onSubmit)}>
                     <Form.Field>
                       <label>Chat ID</label>
-                      <input placeholder="828090678" name="chatId" value={chatId} onChange={handleChange}></input>
+                      <input placeholder="828090678" name="chatId" ref={register}></input>
                     </Form.Field>
                   </Form>
 
